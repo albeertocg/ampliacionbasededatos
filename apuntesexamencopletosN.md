@@ -221,6 +221,7 @@ Se pueden insertar prints con `DEBUG:` que Hadoop enviará a stderr.
 ## Código completo de ejercicios 1 – 15
 hola
 
+
 ### Ejercicio 1 — Total facturado por **ciudad origen**
 
 ```python
