@@ -619,3 +619,286 @@ if cur is not None:
     print(f"{cur} €	{cnt}")
 ```
 
+
+Las respuestas son:
+
+El coordinador envía los datos de nuevo porque no recibió el ACK.
+
+Opción 2
+El coordinador comienza a mandar los datos a otro nodo tras una hora de estar mandando los datos al nodo inicial.
+
+ChatGPT Plus
+Para completar correctamente los espacios en blanco en las líneas de código MongoDB, vamos a asumir que el objetivo es optimizar la ejecución de consultas mediante índices y luego realizar consultas eficientes. Dado el contexto del nombre de la colección (zips), se suele trabajar con documentos que contienen códigos postales con campos como city, state, pop, etc.
+
+Suposición del ejercicio:
+Se quiere realizar índices y consultas sobre la colección zips.
+
+Posible respuesta completa:
+javascript
+Copiar código
+db.zips.createIndex({ "city": 1 })               // En blanco 1: createIndex({ "city": 1 })
+db.zips.find({ "city": "NEW YORK" })             // En blanco 3: find( { "city": "NEW YORK" } )
+db.zips.explain("executionStats").find({ "city": "NEW YORK" })  // En blanco 5: explain("executionStats").find( { "city": "NEW YORK" } )
+Correspondencia por espacios en blanco:
+En blanco 1: createIndex({ "city": 1 })
+
+En blanco 2: "city": 1
+
+En blanco 3: find
+
+En blanco 4: { "city": "NEW YORK" }
+
+En blanco 5: explain("executionStats").find
+
+En blanco 6: { "city": "NEW YORK" }
+
+Explicación:
+createIndex({ "city": 1 }): crea un índice ascendente sobre el campo city, lo que mejora el rendimiento de búsquedas por ciudad.
+
+find({ "city": "NEW YORK" }): consulta los documentos donde city es "NEW YORK".
+
+explain("executionStats").find(...): analiza el plan de ejecución de la consulta, mostrando si se ha utilizado un índice o no.
+
+¿Quieres que pasemos al siguiente ejercicio?
+
+
+
+
+
+
+
+
+Tú dijiste:
+2. Para cada estado (state) devolver el número de ciudades cuya población (population) sea mayor de 10.000 habitantes. Devolver los estados ordenados de forma descendente por número de ciudades con más de 10.000 habitantes.
+
+
+ChatGPT Plus
+Para resolver este ejercicio en MongoDB, puedes usar una agregación que:
+
+Filtre ciudades con población > 10.000.
+
+Agrupe por estado y ciudad para evitar contar ciudades duplicadas (ya que en zips una ciudad puede tener varios documentos con distintos códigos postales).
+
+Agrupe por estado y cuente las ciudades únicas que cumplen la condición.
+
+Ordene el resultado de forma descendente.
+
+Suposición:
+La colección zips tiene documentos con la siguiente estructura típica:
+
+json
+Copiar código
+{
+  "_id": "10001",
+  "city": "NEW YORK",
+  "state": "NY",
+  "pop": 21102
+}
+Consulta MongoDB:
+javascript
+Copiar código
+db.zips.aggregate([
+  {
+    $match: { pop: { $gt: 10000 } }
+  },
+  {
+    $group: {
+      _id: { state: "$state", city: "$city" },
+    }
+  },
+  {
+    $group: {
+      _id: "$_id.state",
+      num_cities: { $sum: 1 }
+    }
+  },
+  {
+    $sort: { num_cities: -1 }
+  }
+])
+Explicación:
+$match filtra documentos con población mayor de 10.000.
+
+Primer $group agrupa por combinación state + city para evitar duplicados (una ciudad puede tener varios ZIPs).
+
+Segundo $group agrupa por state y cuenta cuántas ciudades hay en ese estado con población > 10.000.
+
+$sort ordena los resultados en orden descendente por número de ciudades.
+
+¿Te paso ahora cómo hacer esto mismo en MapReduce también, por si lo piden?
+
+
+
+
+
+
+
+
+Tú dijiste:
+ahora vamos con redis 
+Completar el espacio en blanco
+
+1. Poner en lista de espera a tres pacientes nuevos, Pedro con prioridad absoluta 0, Juan con prioridad 23.2, Lola con prioridad 19.5 y Julia con prioridad 13
+
+
+ChatGPT Plus
+En Redis, para implementar una lista de espera con prioridades, se usa un Sorted Set (ZSET), donde:
+
+El score representa la prioridad (en este caso, cuanto más bajo el score, mayor la prioridad).
+
+Los miembros son los nombres de los pacientes.
+
+Comando Redis completo:
+redis
+Copiar código
+ZADD lista_espera 0 Pedro 23.2 Juan 19.5 Lola 13 Julia
+Explicación de los espacios en blanco:
+ZADD: comando para añadir elementos a un sorted set.
+
+lista_espera: nombre de la lista de espera.
+
+Luego, los pares [score] [nombre] se añaden secuencialmente.
+
+Resultado:
+Redis almacenará a los pacientes en un sorted set, y podrás recuperarlos ordenados por prioridad con:
+
+redis
+Copiar código
+ZRANGE lista_espera 0 -1 WITHSCORES
+¿Quieres que sigamos con más ejercicios de Redis o te paso consultas como ZPOPMIN o filtrado por rango?
+
+
+
+
+
+
+
+
+Tú dijiste:
+2. Mostrar los pacientes con prioridad comprendida entre 10 (intervalo cerrado) y 20 (intervalo abierto).
+
+
+ChatGPT Plus
+Para mostrar los pacientes cuya prioridad esté entre 10 (incluido) y 20 (excluido) en Redis, se usa el comando:
+
+redis
+Copiar código
+ZRANGEBYSCORE lista_espera 10 (20
+Explicación:
+ZRANGEBYSCORE: devuelve los miembros del sorted set con scores dentro de un rango.
+
+lista_espera: nombre del sorted set (la lista de espera).
+
+10: límite inferior cerrado (incluye 10).
+
+(20: límite superior abierto (excluye 20); el paréntesis indica exclusión.
+
+Resultado esperado:
+De los que insertamos antes (Pedro: 0, Juan: 23.2, Lola: 19.5, Julia: 13), se mostrarán:
+
+Julia (13)
+
+Lola (19.5)
+
+¿Pasamos al siguiente?
+
+
+
+
+
+
+
+
+Tú dijiste:
+3. Devolver el paciente con mayor prioridad y borrarlo de la lista de espera. Si no existe ningún paciente esperando actualmente, esperar de forma indefinida a la llegada del próximo paciente.
+
+
+ChatGPT Plus
+Este ejercicio combina dos operaciones en Redis:
+
+Obtener y eliminar el paciente con mayor prioridad (es decir, el de score más bajo, ya que en Redis menor score = mayor prioridad).
+
+Si no hay pacientes, esperar indefinidamente a que llegue uno nuevo.
+
+✅ Comando Redis ideal:
+redis
+Copiar código
+BZPOPMIN lista_espera 0
+Explicación:
+BZPOPMIN: comando bloqueante que espera por el elemento con mínimo score (máxima prioridad) en un sorted set.
+
+lista_espera: nombre del sorted set.
+
+0: tiempo de espera en segundos. El valor 0 significa espera indefinida.
+
+Resultado:
+Si hay pacientes: devuelve el que tiene mayor prioridad y lo elimina del set.
+
+Si no hay pacientes: el comando queda bloqueado hasta que alguien use ZADD para añadir uno.
+
+¿Quieres que pasemos ahora a ejercicios de Neo4j o MapReduce?
+
+
+
+
+
+
+
+
+Tú dijiste:
+a partir de ahora quiero que me des unicamente la respuesta no me expliques ni me digas nada mas
+
+
+ChatGPT Plus
+Entendido. Adelante con el siguiente ejercicio.
+
+
+
+
+
+
+
+
+Tú dijiste:
+neo4j:1. Crear cuatro nodos de tipo ciudad con el atributo nombre con los siguientes valores: Madrid, Valencia, Sevilla y Barcelona. (una consulta)
+
+Query:
+
+
+ChatGPT Plus
+cypher
+Copiar código
+CREATE (:Ciudad {nombre: 'Madrid'}), (:Ciudad {nombre: 'Valencia'}), (:Ciudad {nombre: 'Sevilla'}), (:Ciudad {nombre: 'Barcelona'})
+
+
+
+
+
+
+
+Tú dijiste:
+2. Añadir el atributo llamado “tipo” a las ciudades ya existentes con el valor “provincia”. (una consulta)
+
+
+ChatGPT Plus
+cypher
+Copiar código
+MATCH (c:Ciudad) SET c.tipo = 'provincia'
+
+
+
+
+
+
+
+Tú dijiste:
+3. Crear una relación de carretera en una sola dirección (cualquiera) entre cada dos ciudades diferentes. No puede haber relaciones de las ciudades consigo mismas. (una consulta) 
+
+
+
+ChatGPT Plus
+c
+Copiar código
+MATCH (a:Ciudad), (b:Ciudad)
+WHERE a <> b
+MERGE (a)-[:CARRETERA]->(b)
